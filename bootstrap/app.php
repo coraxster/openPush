@@ -23,8 +23,10 @@ $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
 
- $app->withFacades();
+$app->configure('app');
+$app->configure('fcm');
 
+ $app->withFacades();
  $app->withEloquent();
 
 /*
@@ -82,6 +84,52 @@ $app->singleton(
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
+$app->register(LaravelFCM\FCMServiceProvider::class);
+
+
+$app->configureMonologUsing(function($monolog) {
+
+    $app_name = config('app.app_name');
+    if (env('LOG_SOCKET', false)){
+        $exploded = explode(':', env('LOG_SOCKET'));
+        $socket_handler = new \Monolog\Handler\GelfHandler(
+            new Gelf\Publisher(
+                new Gelf\Transport\UdpTransport(
+                    str_replace('//', '',$exploded[1] ),
+                    $exploded[2] ?? NULL
+                )
+            ),
+            \Monolog\Logger::INFO);
+        $socket_handler->setFormatter(new \Monolog\Formatter\GelfMessageFormatter($app_name, null, 'info.'));
+        $monolog->pushHandler($socket_handler);
+    }
+
+    $stream_handler = new \Monolog\Handler\StreamHandler('php://stdout', \Monolog\Logger::INFO);
+    $monolog->pushHandler($stream_handler);
+
+    if (env('FILE_LOGGING', false)){
+        $fileHandler = new \Monolog\Handler\StreamHandler(
+            storage_path('logs/' . $app_name . '_' . date("Y.m.d") . '.log')
+        );
+        $monolog->pushHandler($fileHandler);
+    }
+
+    if (env('LOG_SOCKET', false)){
+        $exploded = explode(':', env('LOG_SOCKET'));
+        $socket_handler = new \Monolog\Handler\GelfHandler(
+            new Gelf\Publisher(
+                new Gelf\Transport\UdpTransport(
+                    str_replace('//', '',$exploded[1] ),
+                    $exploded[2] ?? NULL
+                )
+            ),
+            \Monolog\Logger::INFO);
+        $socket_handler->setFormatter(new \Monolog\Formatter\GelfMessageFormatter($app_name, null, 'info.'));
+        $monolog->pushHandler($socket_handler);
+    }
+
+    return $monolog;
+});
 
 /*
 |--------------------------------------------------------------------------

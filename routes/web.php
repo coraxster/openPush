@@ -16,4 +16,6 @@ $app->get('/', function () use ($app) {
 });
 
 
-$app->post('/send', 'TestSendController@send');
+
+//$app->get('stat', 'ServiceController@stat');
+$app->get('config', 'ServiceController@config');

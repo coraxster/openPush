@@ -10,7 +10,10 @@
         "vlucas/phpdotenv": "~2.2",
         "predis/predis": "~1.0",
         "illuminate/redis": "^5.4",
-        "sly/notification-pusher": "^2.2"
+        "league/flysystem" : "~1.0",
+        "guzzlehttp/guzzle": "~6.0",
+        "graylog2/gelf-php": "^1.5",
+        "brozot/laravel-fcm": "1.2.*"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
