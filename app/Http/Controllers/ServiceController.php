@@ -46,8 +46,10 @@ class ServiceController extends Controller
     public function config()
     {
         return [
-            'config' => config()->all(),
-            'env' => getenv()
+            'config' => [
+                'app' => config('app'),
+                'fcm' => config('fcm')
+            ]
         ];
     }
 
