@@ -9,12 +9,11 @@ RUN composer install
 FROM alpine
 RUN mkdir -p /app
 RUN apk update \
-    && apk --no-cache upgrade \
-    && apk --no-cache add rsync
+    && apk --no-cache upgrade
 WORKDIR /app
 ADD . .
 COPY --from=build-env /app /app
 ARG BUILD
 RUN echo "Build versions: "$BUILD > /app/versions
-RUN chow -R 100:100 /app/
+RUN chown -R 100:100 /app/
 VOLUME ["/app"]
