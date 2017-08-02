@@ -1,0 +1,115 @@
+version: '2'
+services:
+  web:
+    image: registry.open-broker.ru/microservices/nginx:latest
+    mem_limit: 104857600
+    stdin_open: true
+    tty: true
+    mem_reservation: 104857600
+    cpu_shares: 100
+    labels:
+      io.rancher.sidekicks: code,php,workspace,worker
+      io.rancher.container.pull_image: always
+    volumes_from:
+      - code
+  code:
+    image: registry.open-broker.ru/pushservice/code:$TAG
+    stdin_open: true
+    network_mode: none
+    command:
+    - ash
+    labels:
+      io.rancher.container.pull_image: always
+  workspace:
+    image: registry.open-broker.ru/microservices/fpm7:latest-alpine
+    volumes_from:
+      - code
+    links:
+      - redis
+    environment:
+      APP_ENV: $APP_ENV
+      APP_DEBUG: $APP_DEBUG
+      APP_KEY: $APP_KEY
+      APP_TIMEZONE: $APP_TIMEZONE
+      DB_CONNECTION: $DB_CONNECTION
+      DB_HOST: $DB_HOST
+      DB_PORT: $DB_PORT
+      DB_DATABASE: $DB_DATABASE
+      DB_USERNAME: $DB_USERNAME
+      DB_PASSWORD: $DB_PASSWORD
+      CACHE_DRIVER: $CACHE_DRIVER
+      QUEUE_DRIVER: $QUEUE_DRIVER
+      REDIS_HOST: $REDIS_HOST
+      REDIS_PORT: $REDIS_PORT
+      FILE_LOGGING: $FILE_LOGGING
+      LOG_SOCKET: $LOG_SOCKET
+      FCM_SERVER_KEY: $FCM_SERVER_KEY
+      FCM_SENDER_ID: $FCM_SENDER_ID
+    tty: true
+    working_dir: /app
+    command: sh -c "php artisan queue:restart && sh"
+  php:
+    image: registry.open-broker.ru/microservices/fpm7:latest-alpine
+    volumes_from:
+      - code
+    links:
+      - redis
+    network_mode: container:web
+    environment:
+      APP_ENV: $APP_ENV
+      APP_DEBUG: $APP_DEBUG
+      APP_KEY: $APP_KEY
+      APP_TIMEZONE: $APP_TIMEZONE
+      DB_CONNECTION: $DB_CONNECTION
+      DB_HOST: $DB_HOST
+      DB_PORT: $DB_PORT
+      DB_DATABASE: $DB_DATABASE
+      DB_USERNAME: $DB_USERNAME
+      DB_PASSWORD: $DB_PASSWORD
+      CACHE_DRIVER: $CACHE_DRIVER
+      QUEUE_DRIVER: $QUEUE_DRIVER
+      REDIS_HOST: $REDIS_HOST
+      REDIS_PORT: $REDIS_PORT
+      FILE_LOGGING: $FILE_LOGGING
+      LOG_SOCKET: $LOG_SOCKET
+      FCM_SERVER_KEY: $FCM_SERVER_KEY
+      FCM_SENDER_ID: $FCM_SENDER_ID
+  worker:
+    image: registry.open-broker.ru/microservices/fpm7:latest-alpine
+    volumes_from:
+      - code
+    links:
+      - redis
+    environment:
+      APP_ENV: $APP_ENV
+      APP_DEBUG: $APP_DEBUG
+      APP_KEY: $APP_KEY
+      APP_TIMEZONE: $APP_TIMEZONE
+      DB_CONNECTION: $DB_CONNECTION
+      DB_HOST: $DB_HOST
+      DB_PORT: $DB_PORT
+      DB_DATABASE: $DB_DATABASE
+      DB_USERNAME: $DB_USERNAME
+      DB_PASSWORD: $DB_PASSWORD
+      CACHE_DRIVER: $CACHE_DRIVER
+      QUEUE_DRIVER: $QUEUE_DRIVER
+      REDIS_HOST: $REDIS_HOST
+      REDIS_PORT: $REDIS_PORT
+      FILE_LOGGING: $FILE_LOGGING
+      LOG_SOCKET: $LOG_SOCKET
+      FCM_SERVER_KEY: $FCM_SERVER_KEY
+      FCM_SENDER_ID: $FCM_SENDER_ID
+    tty: true
+    working_dir: /app
+    restart: always
+    command: php artisan queue:work
+
+  redis:
+    mem_limit: 104857600
+    image: redis:alpine
+    volumes:
+    - svcpushredis-$TAG:/data
+    mem_reservation: 104857600
+    cpu_shares: 100
+    labels:
+      io.rancher.container.pull_image: always
