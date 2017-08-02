@@ -9,7 +9,8 @@ RUN composer install
 FROM alpine
 RUN mkdir -p /app
 RUN apk update \
-    && apk --no-cache upgrade
+    && apk --no-cache upgrade \
+    && apk --no-cache add rsync
 WORKDIR /app
 ADD . .
 COPY --from=build-env /app /app
