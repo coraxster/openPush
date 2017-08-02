@@ -18,5 +18,5 @@ $app->get('/', function () use ($app) {
 
 
 //$app->get('stat', 'ServiceController@stat');
-$app->get('config', 'ServiceController@config');
+$app->get('v1/config', 'ServiceController@config');
 $app->post('v1/send_to_device', 'PushController@sendToDevice');
